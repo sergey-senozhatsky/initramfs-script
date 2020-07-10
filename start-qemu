@@ -3,9 +3,7 @@
 # Sergey Senozhatsky, 2020
 # GPLv2
 
-# Q=qemu-system-aarch64
-
-Q=/media/dev/qemu/aarch64-softmmu/qemu-system-aarch64
+Q=qemu-system-aarch64
 INITRAMFS=~/initramfs.cpio.gz
 KERNEL=/boot/kernel8.img
 
