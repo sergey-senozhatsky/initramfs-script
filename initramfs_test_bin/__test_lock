@@ -1,0 +1,18 @@
+#!/bin/sh
+
+function test
+{
+	local TN=$1
+	local TD=$2
+
+	echo -n "Testing ${TD} "
+	modprobe locktorture torture_type=${TN}
+	sleep 180s
+	rmmod locktorture
+	echo "............................ done ${TN}"
+	dmesg | tail -4 | egrep "Writes|Reads"
+}
+
+#test rw_lock "rw_lock"
+test mutex_lock "mutex_lock"
+test rwsem_lock "rwsem_lock"
