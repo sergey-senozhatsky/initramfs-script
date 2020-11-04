@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Sergey Senozhatsky, 2020
 # GPLv2
@@ -6,27 +6,27 @@
 RAMFS=~/initramfs/
 # copy libs for test_bin apps (if any)
 LIBS=(/lib/ld-linux-aarch64.so.1
-	/lib/libm.so.6
-	/lib/libaio.so.1
-	/lib/libcrypt.so.1
-	/lib/librt.so.1
-	/lib/libz.so.1
-	/lib/libdl.so.2
-	/lib/libpthread.so.0
-	/lib/libc.so.6
-	/lib/libpthread.so.0
-	/lib/libdl.so.2
-	/lib/libelf.so.1
-	/lib/libdw.so.1
-	/lib/libunwind.so.8
-	/lib/libunwind-aarch64.so.8
-	/lib/libslang.so.2
-	/lib/libz.so.1
-	/lib/liblzma.so.5
-	/lib/libzstd.so.1
-	/lib/libcap.so.2
-	/lib/libbz2.so.1.0
-	/lib/libgcc_s.so.1
+	/lib/aarch64-linux-gnu/libpthread.so.0
+	/lib/aarch64-linux-gnu/libc.so.6
+	/lib/aarch64-linux-gnu/libzstd.so.1
+	/lib/aarch64-linux-gnu/libz.so.1
+	/lib/aarch64-linux-gnu/libm.so
+	/lib/aarch64-linux-gnu/libgcc_s.so.1
+	/lib/aarch64-linux-gnu/libgccpp.so.1
+	/lib/aarch64-linux-gnu/libcrypt.so
+	/lib/aarch64-linux-gnu/libunwind-aarch64.so.8
+	/lib/aarch64-linux-gnu/libunwind.so.8
+	/lib/aarch64-linux-gnu/libaio.so.1
+	/lib/aarch64-linux-gnu/librt.so
+	/lib/aarch64-linux-gnu/libcap.so.2
+	/lib/aarch64-linux-gnu/libelf.so.1
+	/lib/aarch64-linux-gnu/libslang.so.2
+	/lib/aarch64-linux-gnu/libdw.so.1
+	/lib/aarch64-linux-gnu/liblzma.so.5
+	/lib/aarch64-linux-gnu/libbz2.so.1
+	/lib/aarch64-linux-gnu/libdl.so
+	/lib/aarch64-linux-gnu/libresolv.so.2
+	/lib/aarch64-linux-gnu/libtinfo.so.6
 )
 
 function wipe
@@ -60,11 +60,13 @@ function copy_libs
 
 function create_init_script
 {
-	rm init
-	touch init
+	rm ./init
+	touch ./init
+
 	cat << EOF >> init
 #!/bin/sh
 
+echo "Creating mount points"
 mount -t proc none /proc
 mount -t sysfs none /sys
 mount -t tmpfs none /tmp
@@ -72,6 +74,7 @@ mount -n -t tmpfs none /dev
 mount -t tracefs nodev /sys/kernel/tracing/
 mount -t debugfs nodev /sys/kernel/debug/
 
+echo "Creating devnodes"
 mknod -m 622 /dev/console c 5 1
 mknod -m 662 /dev/ttyAMA0 c 204 64
 mknod -m 666 /dev/null c 1 3
@@ -80,6 +83,8 @@ mknod -m 666 /dev/ptmx c 5 2
 mknod -m 666 /dev/tty c 5 0
 mknod -m 444 /dev/random c 1 8
 mknod -m 444 /dev/urandom c 1 9
+
+echo "Setting up symlinks"
 ln -s /proc/self/fd /dev/fd
 ln -s /proc/self/fd/0 /dev/stdin
 ln -s /proc/self/fd/1 /dev/stdout
@@ -87,6 +92,8 @@ ln -s /proc/self/fd/2 /dev/stderr
 ln -s /proc/kcore /dev/core
 mkdir /dev/pts
 mkdir /dev/shm
+
+echo "Mounting fs-s"
 mount -t devpts -o gid=4,mode=620 none /dev/pts
 mount -t tmpfs none /dev/shm
 
@@ -98,6 +105,8 @@ EOF
 
 function new
 {
+	local VER=$(uname -r)
+
 	mkdir -p etc proc sys usr/bin usr/sbin usr/lib tmp apps dev
 	ln -s usr/bin bin
 	ln -s usr/sbin sbin
@@ -107,7 +116,7 @@ function new
 	cd ../
 
 	mkdir -p lib/modules
-	cp -R /lib/modules/* lib/modules/
+	cp -R /lib/modules/${VER} lib/modules/
 
 	copy_libs
 	cp -R /etc/ld.so.c* etc/
@@ -116,11 +125,12 @@ function new
 	copy_test_bin
 	chmod +x init
 	cp /bin/dmesg bin/
+	cp init sbin/init
 }
 
 function compress
 {
-	find . -print0 | cpio --null -ov --format=newc | gzip -9 > ~/initramfs.cpio.gz
+	find . -print0 | cpio --null -ov --format=newc | gzip -1 > ~/initramfs.cpio.gz
 }
 
 if [ "z$1" == "znew" ]; then

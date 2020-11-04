@@ -4,14 +4,15 @@
 # GPLv2
 
 Q=qemu-system-aarch64
-INITRAMFS=~/initramfs.cpio.gz
-KERNEL=/boot/kernel8.img
+INITRAMFS=/home/ss/initramfs.cpio.gz
+KERNEL=/boot/vmlinuz-latest
 
-${Q} -enable-kvm \
+${Q} --enable-kvm \
 	-m 2512 \
 	-cpu host \
 	-smp cpus=4 \
 	-M virt \
-	-serial stdio \
+	-nographic \
+	-curses \
 	-kernel ${KERNEL} \
 	-initrd ${INITRAMFS}
