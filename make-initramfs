@@ -24,7 +24,7 @@ LIBS=(/lib/ld-linux-aarch64.so.1
 	/lib/aarch64-linux-gnu/libdw.so.1
 	/lib/aarch64-linux-gnu/liblzma.so.5
 	/lib/aarch64-linux-gnu/libbz2.so.1
-	/lib/aarch64-linux-gnu/libdl.so
+	/lib/aarch64-linux-gnu/libdl.so.2
 	/lib/aarch64-linux-gnu/libresolv.so.2
 	/lib/aarch64-linux-gnu/libtinfo.so.6
 )
@@ -125,7 +125,6 @@ function new
 	copy_test_bin
 	chmod +x init
 	cp /bin/dmesg bin/
-	cp init sbin/init
 }
 
 function compress
