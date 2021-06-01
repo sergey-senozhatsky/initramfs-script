@@ -5,28 +5,26 @@
 
 RAMFS=~/initramfs/
 # copy libs for test_bin apps (if any)
-LIBS=(/lib/ld-linux-aarch64.so.1
-	/lib/aarch64-linux-gnu/libpthread.so.0
-	/lib/aarch64-linux-gnu/libc.so.6
-	/lib/aarch64-linux-gnu/libzstd.so.1
-	/lib/aarch64-linux-gnu/libz.so.1
-	/lib/aarch64-linux-gnu/libm.so
-	/lib/aarch64-linux-gnu/libgcc_s.so.1
-	/lib/aarch64-linux-gnu/libgccpp.so.1
-	/lib/aarch64-linux-gnu/libcrypt.so
-	/lib/aarch64-linux-gnu/libunwind-aarch64.so.8
-	/lib/aarch64-linux-gnu/libunwind.so.8
-	/lib/aarch64-linux-gnu/libaio.so.1
-	/lib/aarch64-linux-gnu/librt.so
-	/lib/aarch64-linux-gnu/libcap.so.2
-	/lib/aarch64-linux-gnu/libelf.so.1
-	/lib/aarch64-linux-gnu/libslang.so.2
-	/lib/aarch64-linux-gnu/libdw.so.1
-	/lib/aarch64-linux-gnu/liblzma.so.5
-	/lib/aarch64-linux-gnu/libbz2.so.1
-	/lib/aarch64-linux-gnu/libdl.so.2
-	/lib/aarch64-linux-gnu/libresolv.so.2
-	/lib/aarch64-linux-gnu/libtinfo.so.6
+LIBS=(libpthread.so
+	libc.so
+	libzstd.so
+	libz.so
+	libm.so
+	libgcc_s.so
+	libgccpp.so
+	libcrypt.so
+	libunwind.so
+	libaio.so
+	librt.so
+	libcap.so
+	libelf.so
+	libslang.so
+	libdw.so
+	liblzma.so
+	libbz2.so
+	libdl.so
+	libresolv.so
+	libtinfo.so
 )
 
 function wipe
@@ -52,9 +50,28 @@ function copy_test_bin
 
 function copy_libs
 {
+	local ARCH
+
+	if [ -d /lib/x86_64-linux-gnu ]; then
+		echo "Creating initramfs for x86_64"
+		ARCH=x86_64-linux-gnu
+	else
+		echo "Creating initramfs for aarch64"
+		ARCH=aarch64-linux-gnu
+	fi
+
+	if [ "z${ARCH}" == "zx86_64-linux-gnu" ]; then
+		cp /lib/ld-linux.so* lib/
+		cp /lib/${ARCH}/libunwind* lib/
+
+	else
+		cp /lib/ld-linux-aarch64.so* lib/
+		cp /lib/${ARCH}/libunwind* lib/
+	fi
+
 	for lib in ${LIBS[@]}; do
 		echo "Copying ${lib}"
-		cp ${lib} lib/
+		cp /lib/${ARCH}/${lib}* lib/
 	done
 }
 
